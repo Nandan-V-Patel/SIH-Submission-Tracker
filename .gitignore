@@ -1,0 +1,22 @@
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# Environment Variables & Credentials
+.env
+
+# Python Caches
+__pycache__/
+*.py[cod]
+
+# State files (optional: ignore if you don't want local counts synced to git)
+prev.txt
+.ipynb_checkpoints/
+tester.ipynb
+# Jupyter Notebook Checkpoints & Caches
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Notebook files (if you don't want to track scratchpads at all)
+*.ipynb
