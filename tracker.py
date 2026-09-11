@@ -13,7 +13,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 PS_ID = os.getenv("PS_ID", "SIH26054")
 FILE_PATH = "prev.txt"
-INTERVAL_SECONDS = 300  # 5 minutes
+INTERVAL_SECONDS = 50  # 5 minutes
 
 URL = "https://www.sih.gov.in/sih2026PS"
 HEADERS = {
@@ -67,7 +67,7 @@ def check_and_update():
         content = f.read().strip()
 
     # Alert if count increased
-    if content and curr_num > int(content):
+    if content and curr_num >= int(content):
         diff = curr_num - int(content)
         alert_msg = (
             f"🚨 *SIH Alert!* New submission for `{PS_ID}`!\n\n"
