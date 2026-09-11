@@ -3,6 +3,8 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 load_dotenv()
 
@@ -84,11 +86,29 @@ def check_and_update():
     with open(FILE_PATH, "w") as f:
         f.write(str(curr_num))
 
-if __name__ == "__main__":
-    print(f"Starting SIH Tracker for PS ID: {PS_ID}...")
+class SimplePingHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"SIH Tracker is running 24/7.")
+
+def run_loop():
+    print(f"Starting SIH background loop for PS ID: {PS_ID}...")
     while True:
         try:
             check_and_update()
         except Exception as e:
             print(f"Error in tracking loop: {e}")
         time.sleep(INTERVAL_SECONDS)
+
+if __name__ == "__main__":
+    # Start the scraping loop in a daemon thread
+    loop_thread = threading.Thread(target=run_loop, daemon=True)
+    loop_thread.start()
+
+    # Bind HTTP server to port specified by Render (default 10000 or 8080)
+    port = int(os.getenv("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), SimplePingHandler)
+    print(f"Web listener active on port {port}")
+    server.serve_forever()
