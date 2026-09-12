@@ -93,22 +93,37 @@ class SimplePingHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b"SIH Tracker is running 24/7.")
 
+    def do_HEAD(self):
+        # Fixes the 501 error from UptimeRobot
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+
+    def log_message(self, format, *args):
+        # Silence raw HTTP spam from internet scanners to keep logs clean
+        return
+
 def run_loop():
-    print(f"Starting SIH background loop for PS ID: {PS_ID}...")
+    print(f"--> Background thread launched for PS ID: {PS_ID}", flush=True)
+    
+    # One-time boot alert to verify Telegram connection instantly
+    send_telegram_alert(f"🚀 *Tracker online on Render!*\nMonitoring `{PS_ID}` 24/7.")
+    
     while True:
         try:
+            print("--> Fetching latest data from SIH...", flush=True)
             check_and_update()
         except Exception as e:
-            print(f"Error in tracking loop: {e}")
+            print(f"--> Error in loop: {e}", flush=True)
+        
+        print(f"--> Sleeping for {INTERVAL_SECONDS} seconds...", flush=True)
         time.sleep(INTERVAL_SECONDS)
 
 if __name__ == "__main__":
-    # Start the scraping loop in a daemon thread
     loop_thread = threading.Thread(target=run_loop, daemon=True)
     loop_thread.start()
 
-    # Bind HTTP server to port specified by Render (default 10000 or 8080)
     port = int(os.getenv("PORT", 10000))
+    print(f"Web listener bound to port {port}", flush=True)
     server = HTTPServer(("0.0.0.0", port), SimplePingHandler)
-    print(f"Web listener active on port {port}")
     server.serve_forever()
